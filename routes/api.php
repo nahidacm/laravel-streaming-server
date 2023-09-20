@@ -19,6 +19,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/dash/{filename}', [DashController::class, 'mpdFile']);
-Route::get('/dash/video/{subFolder}/{filename}', [DashController::class, 'serveDashVideo']);
-Route::get('/dash/audio/und/{subFolder}/{filename}', [DashController::class, 'serveDashAudio']);
+Route::get('/dash/{lessonId}/video/{subFolder}/{filename}', [DashController::class, 'serveDashVideo']);
+Route::get('/dash/{lessonId}/audio/und/{subFolder}/{filename}', [DashController::class, 'serveDashAudio']);
+Route::get('/dash/{lessonId}/{filename}', [DashController::class, 'mpdFile']);
