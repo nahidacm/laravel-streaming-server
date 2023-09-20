@@ -1,0 +1,62 @@
+version: "3.7"
+services:
+  application:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: nhdlaravel
+    container_name: ${COMPOSE_PROJECT_NAME:?err}_application
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Dhaka
+      - WEB_DOCUMENT_ROOT=/app/public
+      - php.session.gc_maxlifetime=31536000
+      - php.session.cookie_lifetime=31536000
+      - php.memory_limit=2048M
+      - PHP_DISPLAY_ERRORS=1
+    ports:
+      - "${DOCKER_NGINX_HOST_PORT:?err}:80"
+    volumes:
+      - ./:/app
+    networks:
+      - nhdlaravel
+
+  db:
+    image: mariadb:latest
+    container_name: ${COMPOSE_PROJECT_NAME:?err}_db
+    restart: unless-stopped
+    command: --max_allowed_packet=32505856
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+      TZ: Asia/Dhaka
+    volumes:
+      - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+      - nhdlaravel-mysql-data:/var/lib/mysql
+    networks:
+      - nhdlaravel
+    ports:
+      - "${DOCKER_DB_HOST_PORT:?err}:3306"
+
+  phpmyadmin:
+    image: 'phpmyadmin/phpmyadmin:latest'
+    container_name: ${COMPOSE_PROJECT_NAME:?err}_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "${DOCKER_PHPMYADMIN_HOST_PORT:?err}:80"
+    environment:
+      - PMA_HOST=db
+      - TZ=Asia/Dhaka
+      - UPLOAD_LIMIT=300M
+    networks:
+      - nhdlaravel
+
+networks:
+  nhdlaravel:
+    driver: bridge
+volumes:
+  nhdlaravel-mysql-data:
